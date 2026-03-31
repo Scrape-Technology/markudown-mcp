@@ -1,6 +1,6 @@
 {
   "name": "markudown-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for MarkUDown — connect AI agents to web scraping, search, and extraction",
   "type": "module",
   "bin": {
