@@ -15,11 +15,11 @@ TAG="v${VERSION}"
 
 echo "🔖 Releasing markudown-mcp ${TAG}..."
 
-# Bump version in package.json
-npm version "${VERSION}" --no-git-tag-version
+# Bump version directly in package.json (avoids npm version failing on same version)
+sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" package.json
 
 # Commit
-git add package.json package-lock.json 2>/dev/null || git add package.json
+git add package.json
 git commit -m "chore: release ${TAG}"
 
 # Tag
