@@ -13,9 +13,9 @@ fi
 
 TAG="v${VERSION}"
 
-echo "🔖 Releasing markudown-mcp ${TAG}..."
+echo "🔖 Releasing markudown-engine ${TAG}..."
 
-# Bump version directly in package.json (avoids npm version failing on same version)
+# Bump version directly in package.json
 sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" package.json
 
 # Commit

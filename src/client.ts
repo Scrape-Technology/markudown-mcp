@@ -253,6 +253,34 @@ export class ScrapeTechnologyClient {
     return this._pollJob("agent", result.id);
   }
 
+  async instagram(
+    resource: string,
+    target: string,
+    opts: { limit?: number; sessionCookie?: string } = {},
+  ): Promise<unknown> {
+    const result = await this._request<JobResponse>("POST", "/api/instagram", {
+      resource,
+      target,
+      limit: opts.limit,
+      session_cookie: opts.sessionCookie,
+    });
+    return this._pollJob("instagram", result.id);
+  }
+
+  async x(
+    resource: string,
+    target: string,
+    opts: { limit?: number; sessionCookie?: string } = {},
+  ): Promise<unknown> {
+    const result = await this._request<JobResponse>("POST", "/api/x", {
+      resource,
+      target,
+      limit: opts.limit,
+      session_cookie: opts.sessionCookie,
+    });
+    return this._pollJob("x", result.id);
+  }
+
   async changeDetection(
     url: string,
     opts: {

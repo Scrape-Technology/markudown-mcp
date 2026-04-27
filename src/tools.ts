@@ -345,6 +345,78 @@ export const tools: ToolDefinition[] = [
   },
 
   {
+    name: "instagram",
+    description:
+      "Extract public Instagram data: profiles (followers, bio, recent posts), individual posts (caption, likes, media URLs, hashtags, mentions), hashtag feeds (post URLs), or user search. Provide a session cookie to unlock authenticated content.",
+    schema: {
+      resource: z
+        .enum(["profile", "post", "hashtag", "search"])
+        .describe('"profile" | "post" | "hashtag" | "search"'),
+      target: z
+        .string()
+        .describe(
+          "Username for profile, post URL or shortcode for post, hashtag without # for hashtag, or search query",
+        ),
+      limit: z.number().optional().describe("Max items for hashtag/search (default: 20)"),
+      sessionCookie: z
+        .string()
+        .optional()
+        .describe('Instagram session cookie, e.g. "sessionid=abc123". Recommended for authenticated content.'),
+    },
+    async handler(args, client) {
+      try {
+        const result = await client.instagram(
+          args.resource as string,
+          args.target as string,
+          {
+            limit: args.limit as number | undefined,
+            sessionCookie: args.sessionCookie as string | undefined,
+          },
+        );
+        return ok(result);
+      } catch (e) {
+        return err(e);
+      }
+    },
+  },
+
+  {
+    name: "x",
+    description:
+      "Extract public X (Twitter) data: profiles (followers, bio, recent tweets), individual posts (text, likes, retweets, views, media URLs), or keyword/hashtag/mention search. A session cookie with auth_token and ct0 is recommended for complete data.",
+    schema: {
+      resource: z
+        .enum(["profile", "post", "search"])
+        .describe('"profile" | "post" | "search"'),
+      target: z
+        .string()
+        .describe(
+          "Username for profile, post URL for post, or search query (keywords, @mentions, #hashtags)",
+        ),
+      limit: z.number().optional().describe("Max posts for search (default: 20)"),
+      sessionCookie: z
+        .string()
+        .optional()
+        .describe('X session cookies: "auth_token=abc; ct0=xyz". Recommended for full content access.'),
+    },
+    async handler(args, client) {
+      try {
+        const result = await client.x(
+          args.resource as string,
+          args.target as string,
+          {
+            limit: args.limit as number | undefined,
+            sessionCookie: args.sessionCookie as string | undefined,
+          },
+        );
+        return ok(result);
+      } catch (e) {
+        return err(e);
+      }
+    },
+  },
+
+  {
     name: "change_detection",
     description:
       "Detect whether the content of a URL has changed since it was last checked. Useful for monitoring pages for updates.",
