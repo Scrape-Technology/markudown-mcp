@@ -1,8 +1,15 @@
 # markudown-mcp
 
+[![npm version](https://img.shields.io/npm/v/markudown-mcp.svg)](https://www.npmjs.com/package/markudown-mcp)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 MCP server for [MarkUDown / Scrape Technology](https://scrapetechnology.com) — gives AI agents (Claude, Cursor, Windsurf, n8n, LangGraph, etc.) access to web scraping, Google search, data extraction, and more.
 
-**No infrastructure needed.** Just an API key.
+**No infrastructure needed.** Just an API key — get one free at [scrapetechnology.com/markudown/register](https://scrapetechnology.com/markudown/register) (**500 free credits, no credit card**). Docs: [scrapetechnology.com/markudown/docs](https://scrapetechnology.com/markudown/docs).
+
+```bash
+MARKUDOWN_API_KEY=your-key npx -y markudown-mcp
+```
 
 ---
 
@@ -29,7 +36,7 @@ AI Agent (Claude Desktop, Cursor, etc.)
 MARKUDOWN_API_KEY=your-key npx markudown-mcp
 ```
 
-Get your API key at [scrapetechnology.com](https://scrapetechnology.com/markudown).
+Get your API key at [scrapetechnology.com/markudown/register](https://scrapetechnology.com/markudown/register).
 
 ---
 
@@ -81,7 +88,9 @@ Add to your editor's MCP config:
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `MARKUDOWN_API_KEY` | Yes | — | Your Scrape Technology API key |
-| `MARKUDOWN_API_URL` | No | `https://api.scrapetechnology.com` | Override the API base URL (self-hosted deployments) |
+| `MARKUDOWN_API_URL` | No | `https://api.scrapetechnology.com` | Override the API base URL |
+
+> **Note:** a key the API does not recognise is not rejected — it is served as the anonymous free tier (20 requests/day), and a 429 "Free tier daily limit exceeded" follows once that is used up. If you see that message with a paid key, check the key in your dashboard. Only a missing key returns 401.
 
 ---
 
@@ -97,6 +106,7 @@ Scrape a single URL and return its content as clean Markdown.
 | `includeLinks` | boolean | `false` | Include hyperlinks in output |
 | `includeHtml` | boolean | `false` | Also return raw HTML |
 | `excludeTags` | string[] | `["header","nav","footer"]` | HTML tags to strip |
+| `formats` | (`"markdown"` \| `"summary"`)[] | — | Output formats to return |
 | `timeout` | number | `60` | Timeout in seconds |
 
 **Example prompt:** *"Scrape https://example.com and summarize the main content."*
@@ -228,33 +238,10 @@ Detect whether a URL's content has changed since it was last checked.
 |---|---|---|---|
 | `url` | string | required | URL to monitor |
 | `mainContent` | boolean | `true` | Compare only main content |
-| `excludeTags` | string[] | `["header","nav","footer"]` | Tags to ignore when comparing |
+| `excludeTags` | string[] | `["header","nav","footer"]` | Tags to ignore when comparing (currently ignored by the API) |
 | `timeout` | number | `60` | Timeout in seconds |
 
 **Example prompt:** *"Check if the pricing page at https://example.com/pricing has changed."*
-
----
-
-## Self-hosted deployment
-
-If you run your own MarkUDown Engine, set `MARKUDOWN_API_URL` to point to your instance:
-
-```json
-{
-  "mcpServers": {
-    "markudown": {
-      "command": "npx",
-      "args": ["markudown-mcp"],
-      "env": {
-        "MARKUDOWN_API_KEY": "your-api-key",
-        "MARKUDOWN_API_URL": "https://your-engine.example.com"
-      }
-    }
-  }
-}
-```
-
-For direct BullMQ access (no API key needed), use the **self-hosted MCP server** in `MarkUDown-Engine/services/mcp/`.
 
 ---
 

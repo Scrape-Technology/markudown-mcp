@@ -118,12 +118,13 @@ export class ScrapeTechnologyClient {
       maxUrls?: number;
     } = {},
   ): Promise<unknown> {
-    return this._request("POST", "/api/map", {
+    const result = await this._request<JobResponse>("POST", "/api/map", {
       url: [url],
       allowed_words: opts.allowedWords ?? [],
       blocked_words: opts.blockedWords ?? [],
       max_urls: opts.maxUrls ?? 1000,
     });
+    return this._pollJob("map", result.id);
   }
 
   async screenshot(
@@ -261,11 +262,12 @@ export class ScrapeTechnologyClient {
       excludeTags?: string[];
     } = {},
   ): Promise<unknown> {
-    return this._request("POST", "/api/change-detection", {
-      url: [url],
+    const result = await this._request<JobResponse>("POST", "/api/change-detection", {
+      url,
       timeout: opts.timeout ?? 60,
       main_content: opts.mainContent ?? true,
       exclude_tags: opts.excludeTags ?? ["header", "nav", "footer"],
     });
+    return this._pollJob("change-detection", result.id);
   }
 }

@@ -24,7 +24,7 @@ const baseUrl =
 const client = new ScrapeTechnologyClient({ apiKey, baseUrl });
 
 const server = new Server(
-  { name: "markudown-mcp", version: "1.0.0" },
+  { name: "markudown-mcp", version: "2.0.0" },
   { capabilities: { tools: {} } },
 );
 
@@ -63,7 +63,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 function zodTypeToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
   if (schema instanceof z.ZodOptional) {
-    return zodTypeToJsonSchema(schema.unwrap());
+    // .optional().describe() puts the description on the wrapper, not the inner type
+    const inner = zodTypeToJsonSchema(schema.unwrap());
+    if (schema.description) inner.description = schema.description;
+    return inner;
   }
   if (schema instanceof z.ZodString) {
     const base: Record<string, unknown> = { type: "string" };

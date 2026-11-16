@@ -13,7 +13,7 @@ if (!apiKey) {
 }
 const baseUrl = process.env.MARKUDOWN_API_URL ?? "https://api.scrapetechnology.com";
 const client = new ScrapeTechnologyClient({ apiKey, baseUrl });
-const server = new Server({ name: "markudown-mcp", version: "1.0.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "markudown-mcp", version: "2.0.0" }, { capabilities: { tools: {} } });
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: tools.map((t) => ({
         name: t.name,
@@ -43,7 +43,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 function zodTypeToJsonSchema(schema) {
     if (schema instanceof z.ZodOptional) {
-        return zodTypeToJsonSchema(schema.unwrap());
+        // .optional().describe() puts the description on the wrapper, not the inner type
+        const inner = zodTypeToJsonSchema(schema.unwrap());
+        if (schema.description)
+            inner.description = schema.description;
+        return inner;
     }
     if (schema instanceof z.ZodString) {
         const base = { type: "string" };

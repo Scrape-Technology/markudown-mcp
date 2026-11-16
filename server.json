@@ -1,0 +1,32 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Scrape-Technology/markudown-mcp",
+  "title": "MarkUDown",
+  "description": "Web scraping for AI agents: scrape, crawl, search and extract any site as clean Markdown or JSON.",
+  "websiteUrl": "https://scrapetechnology.com/markudown",
+  "repository": {
+    "url": "https://github.com/Scrape-Technology/markudown-mcp",
+    "source": "github"
+  },
+  "version": "2.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "markudown-mcp",
+      "version": "2.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MARKUDOWN_API_KEY",
+          "description": "MarkUDown API key. Get one free (500 credits, no card) at https://scrapetechnology.com/markudown/register",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
