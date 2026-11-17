@@ -92,6 +92,8 @@ Add to your editor's MCP config:
 
 > **Note:** a key the API does not recognise is not rejected — it is served as the anonymous free tier (20 requests/day), and a 429 "Free tier daily limit exceeded" follows once that is used up. If you see that message with a paid key, check the key in your dashboard. Only a missing key returns 401.
 
+Async tools (crawl, map, search, extract, batch_scrape, deep_research, agent, change_detection) wait at most 10 minutes for the job; after that the tool returns an error with the job id instead of waiting forever.
+
 ---
 
 ## Available tools
@@ -136,11 +138,11 @@ Recursively crawl a website, following internal links. Returns Markdown for each
 | `maxDepth` | number | `2` | Maximum link depth |
 | `limit` | number | `10` | Maximum pages to crawl |
 | `mainContent` | boolean | `true` | Extract only main content |
-| `includeLinks` | boolean | `false` | Include hyperlinks |
+| `includeLinks` | boolean | `false` | Add each page's links to its result |
 | `includeHtml` | boolean | `false` | Include raw HTML |
 | `excludeTags` | string[] | — | HTML tags to strip |
 | `blockedWords` | string[] | — | Skip URLs with these words |
-| `includeOnly` | string[] | — | Only crawl URLs with these words |
+| `includeOnly` | string[] | — | Only follow URLs containing one of these strings (`*` matches anything); the start URL is always crawled |
 | `timeout` | number | `60` | Per-page timeout in seconds |
 
 **Example prompt:** *"Crawl https://docs.example.com up to depth 3 and find all mentions of 'authentication'."*
@@ -215,7 +217,7 @@ Scrape multiple URLs and synthesize their content into a comprehensive research 
 ---
 
 ### `agent`
-Launch an AI agent that autonomously navigates a website to answer a question or complete a task.
+Launch an AI agent that navigates a website to answer a question. It reads each page (scrolling to load lazy content) and follows links; it does not click buttons or fill in forms.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -224,7 +226,6 @@ Launch an AI agent that autonomously navigates a website to answer a question or
 | `maxSteps` | number | `10` | Maximum navigation steps |
 | `maxPages` | number | `5` | Maximum pages to visit |
 | `allowNavigation` | boolean | `true` | Allow following links |
-| `includeScreenshots` | boolean | `false` | Screenshot each step |
 | `timeout` | number | `120` | Total timeout in seconds |
 
 **Example prompt:** *"Go to https://shop.example.com and find the return policy."*

@@ -1,11 +1,18 @@
 const DEFAULT_BASE_URL = "https://api.scrapetechnology.com";
 const DEFAULT_TIMEOUT = 120_000;
 const POLL_INTERVAL = 2_000;
+// Upper bound for waiting on one async job; without it a job stuck in "pending"/"processing"
+// (stalled worker, lost job) hung the tool call forever.
+const DEFAULT_POLL_TIMEOUT = 600_000;
 
 export interface ClientOptions {
   apiKey: string;
   baseUrl?: string;
   timeout?: number;
+  /** Max milliseconds to wait for an async job (default: 600 000). */
+  pollTimeout?: number;
+  /** Milliseconds between status polls (default: 2 000). */
+  pollInterval?: number;
 }
 
 export interface JobResponse {
@@ -36,11 +43,15 @@ export class ScrapeTechnologyClient {
   private apiKey: string;
   private baseUrl: string;
   private timeout: number;
+  private pollTimeout: number;
+  private pollInterval: number;
 
   constructor(opts: ClientOptions) {
     this.apiKey = opts.apiKey;
     this.baseUrl = (opts.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
     this.timeout = opts.timeout ?? DEFAULT_TIMEOUT;
+    this.pollTimeout = opts.pollTimeout ?? DEFAULT_POLL_TIMEOUT;
+    this.pollInterval = opts.pollInterval ?? POLL_INTERVAL;
   }
 
   private async _request<T = unknown>(
@@ -73,7 +84,8 @@ export class ScrapeTechnologyClient {
   }
 
   private async _pollJob(queue: string, jobId: string): Promise<JobStatus> {
-    while (true) {
+    const deadline = Date.now() + this.pollTimeout;
+    while (Date.now() < deadline) {
       const status = await this._request<JobStatus>("GET", `/api/${queue}/${jobId}`);
 
       if (status.status === "completed") return status;
@@ -81,11 +93,14 @@ export class ScrapeTechnologyClient {
         throw new ScrapeTechnologyClientError(status.error ?? "Job failed");
       }
       if (status.status === "not_found") {
-        throw new ScrapeTechnologyClientError(`Job ${jobId} not found`);
+        throw new ScrapeTechnologyClientError(`Job ${jobId} not found`, 404);
       }
 
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+      await new Promise((r) => setTimeout(r, this.pollInterval));
     }
+    throw new ScrapeTechnologyClientError(
+      `Job ${jobId} (${queue}) still not finished after ${this.pollTimeout / 1000}s; stopped waiting`,
+    );
   }
 
   async scrape(
@@ -237,7 +252,6 @@ export class ScrapeTechnologyClient {
       maxSteps?: number;
       maxPages?: number;
       allowNavigation?: boolean;
-      includeScreenshots?: boolean;
       timeout?: number;
     } = {},
   ): Promise<unknown> {
@@ -247,7 +261,6 @@ export class ScrapeTechnologyClient {
       max_steps: opts.maxSteps ?? 10,
       max_pages: opts.maxPages ?? 5,
       allow_navigation: opts.allowNavigation ?? true,
-      include_screenshots: opts.includeScreenshots ?? false,
       timeout: opts.timeout ?? 120,
     });
 
