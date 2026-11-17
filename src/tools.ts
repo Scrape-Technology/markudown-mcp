@@ -122,7 +122,7 @@ export const tools: ToolDefinition[] = [
         .boolean()
         .optional()
         .describe("Extract only main content from each page (default: true)"),
-      includeLinks: z.boolean().optional().describe("Include hyperlinks in output (default: false)"),
+      includeLinks: z.boolean().optional().describe("Add each page's links to its result (default: false)"),
       includeHtml: z.boolean().optional().describe("Include raw HTML alongside markdown (default: false)"),
       excludeTags: z.array(z.string()).optional().describe("HTML tags to strip"),
       blockedWords: z
@@ -132,7 +132,7 @@ export const tools: ToolDefinition[] = [
       includeOnly: z
         .array(z.string())
         .optional()
-        .describe("Only crawl URLs containing these words"),
+        .describe("Only follow URLs containing one of these strings (* matches anything); the start URL is always crawled"),
       timeout: z.number().optional().describe("Per-page timeout in seconds (default: 60)"),
     },
     async handler(args, client) {
@@ -298,7 +298,7 @@ export const tools: ToolDefinition[] = [
   {
     name: "agent",
     description:
-      "Launch an AI agent that autonomously navigates a website to answer a question or complete a task. The agent can click, scroll, and follow links across multiple pages.",
+      "Launch an AI agent that navigates a website to answer a question. It reads each page (scrolling to load lazy content) and follows links across multiple pages; it does not click buttons or fill in forms.",
     schema: {
       url: z.string().url().describe("The starting URL for the agent"),
       prompt: z
@@ -318,10 +318,6 @@ export const tools: ToolDefinition[] = [
         .boolean()
         .optional()
         .describe("Allow the agent to follow links to other pages (default: true)"),
-      includeScreenshots: z
-        .boolean()
-        .optional()
-        .describe("Capture screenshots at each step (default: false)"),
       timeout: z.number().optional().describe("Total timeout in seconds (default: 120)"),
     },
     async handler(args, client) {
@@ -333,7 +329,6 @@ export const tools: ToolDefinition[] = [
             maxSteps: args.maxSteps as number | undefined,
             maxPages: args.maxPages as number | undefined,
             allowNavigation: args.allowNavigation as boolean | undefined,
-            includeScreenshots: args.includeScreenshots as boolean | undefined,
             timeout: args.timeout as number | undefined,
           },
         );
