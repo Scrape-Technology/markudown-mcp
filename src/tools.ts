@@ -312,8 +312,11 @@ export const tools: ToolDefinition[] = [
         .describe("Maximum number of navigation steps the agent may take (default: 10)"),
       maxPages: z
         .number()
+        .int()
+        .min(1)
+        .max(15)
         .optional()
-        .describe("Maximum number of pages the agent may visit (default: 5)"),
+        .describe("Maximum number of pages the agent may visit (default: 5, max: 15)"),
       allowNavigation: z
         .boolean()
         .optional()

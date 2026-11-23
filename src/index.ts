@@ -24,7 +24,7 @@ const baseUrl =
 const client = new ScrapeTechnologyClient({ apiKey, baseUrl });
 
 const server = new Server(
-  { name: "markudown-mcp", version: "2.0.0" },
+  { name: "markudown-mcp", version: "2.1.0" },
   { capabilities: { tools: {} } },
 );
 
