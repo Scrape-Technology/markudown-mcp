@@ -64,7 +64,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 function zodTypeToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
   if (schema instanceof z.ZodOptional) {
     // .optional().describe() puts the description on the wrapper, not the inner type
-    const inner = zodTypeToJsonSchema(schema.unwrap());
+    const inner = zodTypeToJsonSchema(schema.unwrap() as z.ZodTypeAny);
     if (schema.description) inner.description = schema.description;
     return inner;
   }
@@ -86,7 +86,7 @@ function zodTypeToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
   if (schema instanceof z.ZodArray) {
     const base: Record<string, unknown> = {
       type: "array",
-      items: zodTypeToJsonSchema(schema.element),
+      items: zodTypeToJsonSchema(schema.element as z.ZodTypeAny),
     };
     if (schema.description) base.description = schema.description;
     return base;
