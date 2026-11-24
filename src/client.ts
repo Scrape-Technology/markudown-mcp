@@ -69,6 +69,9 @@ export class ScrapeTechnologyClient {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      // Every path we call matches its API route exactly, so a redirect is never expected; refuse it
+      // rather than resend X-API-KEY to wherever the Location header points.
+      redirect: "error",
       signal: AbortSignal.timeout(this.timeout),
     });
 
