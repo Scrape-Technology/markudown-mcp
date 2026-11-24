@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { ScrapeTechnologyClient } from "./client.js";
-import { tools } from "./tools.js";
+import { callTool, tools } from "./tools.js";
 
 const apiKey = process.env.MARKUDOWN_API_KEY;
 if (!apiKey) {
@@ -58,7 +58,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  return tool.handler((args ?? {}) as Record<string, unknown>, client);
+  return callTool(tool, args, client);
 });
 
 function zodTypeToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
@@ -70,11 +70,14 @@ function zodTypeToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
   }
   if (schema instanceof z.ZodString) {
     const base: Record<string, unknown> = { type: "string" };
+    if (schema.format === "url") base.format = "uri";
     if (schema.description) base.description = schema.description;
     return base;
   }
   if (schema instanceof z.ZodNumber) {
-    const base: Record<string, unknown> = { type: "number" };
+    const base: Record<string, unknown> = { type: schema.isInt ? "integer" : "number" };
+    if (Number.isFinite(schema.minValue)) base.minimum = schema.minValue;
+    if (Number.isFinite(schema.maxValue)) base.maximum = schema.maxValue;
     if (schema.description) base.description = schema.description;
     return base;
   }

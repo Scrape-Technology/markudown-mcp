@@ -25,6 +25,18 @@ export interface ToolDefinition {
   handler: (args: Record<string, unknown>, client: ScrapeTechnologyClient) => Promise<ToolResult>;
 }
 
+// The advertised JSON schema can't enforce every zod check and clients may not validate at all,
+// so run the zod schema here and hand the handler only parsed data.
+export async function callTool(
+  tool: ToolDefinition,
+  args: unknown,
+  client: ScrapeTechnologyClient,
+): Promise<ToolResult> {
+  const parsed = z.object(tool.schema).safeParse(args ?? {});
+  if (!parsed.success) return err(`Invalid arguments:\n${z.prettifyError(parsed.error)}`);
+  return tool.handler(parsed.data, client);
+}
+
 export const tools: ToolDefinition[] = [
   {
     name: "scrape",
