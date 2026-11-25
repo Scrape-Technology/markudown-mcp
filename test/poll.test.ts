@@ -11,7 +11,7 @@ function stubFetch(status: unknown, httpStatus = 200) {
 }
 
 const client = (pollTimeout = 5_000) =>
-  new ScrapeTechnologyClient({ apiKey: "k", baseUrl: "http://test", pollTimeout, pollInterval: 1 });
+  new ScrapeTechnologyClient({ apiKey: "k", baseUrl: "http://localhost", pollTimeout, pollInterval: 1 });
 
 test("gives up at pollTimeout instead of polling forever", async () => {
   stubFetch({ success: false, id: "j1", status: "processing" });

@@ -49,6 +49,14 @@ export class ScrapeTechnologyClient {
   constructor(opts: ClientOptions) {
     this.apiKey = opts.apiKey;
     this.baseUrl = (opts.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
+    const base = new URL(this.baseUrl);
+    const local = base.protocol === "http:" && ["localhost", "127.0.0.1"].includes(base.hostname);
+    if (base.protocol !== "https:" && !local) {
+      throw new ScrapeTechnologyClientError(
+        `Refusing API base URL ${base.protocol}//${base.host}: X-API-KEY would be sent in clear text. ` +
+          "Use https:// (http:// is allowed only for localhost and 127.0.0.1); check MARKUDOWN_API_URL.",
+      );
+    }
     this.timeout = opts.timeout ?? DEFAULT_TIMEOUT;
     this.pollTimeout = opts.pollTimeout ?? DEFAULT_POLL_TIMEOUT;
     this.pollInterval = opts.pollInterval ?? POLL_INTERVAL;
@@ -71,9 +79,22 @@ export class ScrapeTechnologyClient {
       body: body ? JSON.stringify(body) : undefined,
       // Every path we call matches its API route exactly, so a redirect is never expected; refuse it
       // rather than resend X-API-KEY to wherever the Location header points.
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(this.timeout),
     });
+
+    if (resp.status >= 300 && resp.status < 400) {
+      let target = "an unknown location";
+      try {
+        const loc = new URL(resp.headers.get("location") ?? "", url);
+        target = `${loc.protocol}//${loc.host}`; // no path or query: they may carry tokens
+      } catch {}
+      throw new ScrapeTechnologyClientError(
+        `API redirected (${resp.status}) to ${target}; not followed so X-API-KEY is not sent there. ` +
+          "Check MARKUDOWN_API_URL.",
+        resp.status,
+      );
+    }
 
     if (!resp.ok) {
       const text = await resp.text().catch(() => "Unknown error");

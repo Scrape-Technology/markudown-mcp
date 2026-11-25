@@ -11,7 +11,7 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "test": "node --import tsx --test test/poll.test.ts test/tools.test.ts",
+    "test": "node --import tsx --test test/poll.test.ts test/tools.test.ts test/client.test.ts",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
     "release": "bash scripts/release.sh"

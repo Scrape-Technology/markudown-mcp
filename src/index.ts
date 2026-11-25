@@ -21,7 +21,13 @@ if (!apiKey) {
 const baseUrl =
   process.env.MARKUDOWN_API_URL ?? "https://api.scrapetechnology.com";
 
-const client = new ScrapeTechnologyClient({ apiKey, baseUrl });
+let client: ScrapeTechnologyClient;
+try {
+  client = new ScrapeTechnologyClient({ apiKey, baseUrl });
+} catch (e) {
+  process.stderr.write(`Error: ${e instanceof Error ? e.message : String(e)}\n`);
+  process.exit(1);
+}
 
 const server = new Server(
   { name: "markudown-mcp", version: "2.1.0" },
