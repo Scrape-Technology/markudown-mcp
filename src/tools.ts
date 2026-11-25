@@ -25,6 +25,22 @@ export interface ToolDefinition {
   handler: (args: Record<string, unknown>, client: ScrapeTechnologyClient) => Promise<ToolResult>;
 }
 
+// Before validation existed, null fell through to the client's `?? default` and the API coerced
+// numeric strings, so keep both working: drop null keys and turn "5" into 5 for number fields only.
+// Done here rather than with z.coerce, which also turns "", true and null into 0/1.
+function normalizeArgs(schema: z.ZodRawShape, args: unknown): unknown {
+  if (typeof args !== "object" || args === null || Array.isArray(args)) return args ?? {};
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(args)) {
+    if (value == null) continue;
+    const field = schema[key];
+    const inner = field instanceof z.ZodOptional ? field.unwrap() : field;
+    const numeric = typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value));
+    out[key] = inner instanceof z.ZodNumber && numeric ? Number(value) : value;
+  }
+  return out;
+}
+
 // The advertised JSON schema can't enforce every zod check and clients may not validate at all,
 // so run the zod schema here and hand the handler only parsed data.
 export async function callTool(
@@ -32,7 +48,7 @@ export async function callTool(
   args: unknown,
   client: ScrapeTechnologyClient,
 ): Promise<ToolResult> {
-  const parsed = z.object(tool.schema).safeParse(args ?? {});
+  const parsed = z.object(tool.schema).safeParse(normalizeArgs(tool.schema, args));
   if (!parsed.success) return err(`Invalid arguments:\n${z.prettifyError(parsed.error)}`);
   return tool.handler(parsed.data, client);
 }
