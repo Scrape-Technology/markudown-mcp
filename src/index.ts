@@ -30,7 +30,7 @@ try {
 }
 
 const server = new Server(
-  { name: "markudown-mcp", version: "2.1.0" },
+  { name: "markudown-mcp", version: "2.1.1" },
   { capabilities: { tools: {} } },
 );
 
